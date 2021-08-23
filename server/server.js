@@ -17,12 +17,12 @@ let unsplash_url = `https://api.unsplash.com/search/photos?page=1&orientation=la
 
 let cache = {};
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.json({ message: "You are in the super secret area" });
 });
 
-app.get("/api", async (req, res) => {
-  let city = req.query.city;
+app.get("/api/:city", async (req, res) => {
+  let city = req.params.city;
   try {
     let requestData = await axios.get(base_url + `&q=${city}`);
     let data = requestData.data;
@@ -47,6 +47,7 @@ app.get("/api", async (req, res) => {
     if (Object.keys(cache).includes(query)) {
       response.image = cache[query][index];
     } else {
+      // console.log("Make a request");
       let pictureRequest = await axios.get(unsplash_url + `&query=${query}`);
       cache[query] = pictureRequest.data.results;
       response.image = pictureRequest.data.results[index];
@@ -55,7 +56,7 @@ app.get("/api", async (req, res) => {
     res.json(response);
   } catch (error) {
     // console.log(error.response);
-    res.status(error.response.status);
+    res.status(error.response.status || 500);
     res.json({ error: error.response.data });
   }
 });
